@@ -1,8 +1,12 @@
 # Communicable, Maternal, Neonatal, and Nutritional Disease Burden (CMNN)
 
+```{r include = F}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
 ```{r}
 # Load necessary packages
-pacman::p_load(tidyverse, knitr, here)
+pacman::p_load(tidyverse, knitr, janitor, here)
 
 # Import the communicable diseases data
 data_cmnn <- read_csv(here("data", "burden-of-disease-cmnn.csv"))
@@ -11,19 +15,38 @@ data_cmnn <- read_csv(here("data", "burden-of-disease-cmnn.csv"))
 ## Table of Estimates for CMNN Burden Over Time
 
 ```{r}
-# Here render a table for the DALY burden over time for the three countries 
+#Cleaning names
+data_cmnn <- data_cmnn %>% 
+  clean_names() 
+```
+
+```{r}
+# Here render a table for the DALY burden over time for the three countries
+table_cmn <- data_cmnn %>% 
+  rename(dalys=dal_ys_disability_adjusted_life_years_communicable_maternal_neonatal_and_nutritional_diseases_sex_both_age_age_standardized_rate,country=entity) %>%
+  filter(code=="BFA"|code=="ZMB"|code=="CHE") 
 # You should pivot the data to show each country in a separate column.
-# Use kable() from the knitr package to render the table.
+table_cmn_wide <- table_cmn %>%
+  pivot_wider(values_from =dalys, names_from =country) 
+  # Use kable() from the knitr package to render the table.
+ kable(table_cmn_wide) 
 ```
 
 ## Plot Showing Trends in CMNN Burden Over Time
 
 ```{r}
+ggplot(data =table_cmn, aes(x = year, y = dalys, color = country)) +
+  geom_line() +
+  labs(title = "Trend of communicable, maternal, neonatal, and nutritional disease burden 1990-2019",
+       x = "Year",
+       y = "Burden of disease (in dalys",
+       color = "country") +
+  scale_color_manual(values = c("Burkina Faso" = "blue", "Switzerland" = "red", "Zambia" = "green")) 
+
+# You can customize the colors if you want
 # Here, plot a line graph showing the trend of DALY burden for the chosen countries over time. You can use ggplot2 to create this plot. Each country's line should be a different color.
 ```
 
 ## Summary of CMNN Burden Findings
 
-Provide a brief analysis based on the data presented in the table and chart. Highlight any significant findings or patterns. About 3 sentences.
-
-
+The burden of disease (BoD) for Switzerland is extremely low and has remain constant over time. The BoD for Zambia has been very high during two decades (1990s and 2000s), certainly as a result of the HIV epidemic. As of 2010, Zambia BoD decreased over time and became comparable to that of Burkina Faso.

@@ -2,7 +2,7 @@
 
 ```{r}
 # Load necessary packages
-pacman::p_load(tidyverse, knitr, here)
+pacman::p_load(tidyverse, knitr, janitor, here)
 
 # Import the overall disease data
 data_overall <- read_csv(here("data", "burden-of-disease-all-causes.csv"))
@@ -11,18 +11,34 @@ data_overall <- read_csv(here("data", "burden-of-disease-all-causes.csv"))
 ## Table of Estimates for Overall Disease Burden Over Time
 
 ```{r}
-# Here render a table for the DALY burden over time for the three countries 
+#Cleaning names
+data_overall <- data_overall %>% 
+  clean_names() 
+```
+
+```{r}
+table_overall <- data_overall %>% 
+  rename(dalys=dal_ys_disability_adjusted_life_years_all_causes_sex_both_age_age_standardized_rate,country=entity) %>%
+  filter(code=="BFA"|code=="ZMB"|code=="CHE") 
 # You should pivot the data to show each country in a separate column.
-# Use kable() from the knitr package to render the table.
+table_overall_wide <- table_overall %>%
+  pivot_wider(values_from =dalys, names_from =country) 
+  # Use kable() from the knitr package to render the table.
+ kable(table_overall_wide)
 ```
 
 ## Plot Showing Trends in Overall Disease Burden Over Time
 
 ```{r}
-# Here, plot a line graph showing the trend of DALY burden for the chosen countries over time. You can use ggplot2 to create this plot. Each country's line should be a different color.
+ggplot(data =table_overall, aes(x = year, y = dalys, color = country)) +
+  geom_line() +
+  labs(title = "Trend of disease burden (all causes) 1990-2019",
+       x = "Year",
+       y = "Burden of disease (in dalys",
+       color = "country") +
+  scale_color_manual(values = c("Burkina Faso" = "blue", "Switzerland" = "red", "Zambia" = "green"))
 ```
 
 ## Summary of Overall Disease Burden Findings
 
-Provide a brief analysis based on the data presented in the table and chart. Highlight any significant findings or patterns. About 3 sentences.
-
+#The burden of disease (BoD) due to all causes for Switzerland is extremely low compared to Burkina Faso and Zambia, and has been declining quite consistenly over time. The BoD for Zambia has been very high during two decades (1990s and 2000s), certainly as a result of the HIV epidemic. Around 2012, Zambia BoD decreased over time and became comparable to that of Burkina Faso

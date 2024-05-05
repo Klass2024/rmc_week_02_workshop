@@ -2,7 +2,7 @@
 
 ```{r}
 # Load necessary packages
-pacman::p_load(tidyverse, knitr, here)
+pacman::p_load(tidyverse, knitr, janitor, here)
 
 # Import the non-communicable diseases data
 data_ncd <- read_csv(here("data", "burden-of-disease-ncd.csv"))
@@ -11,19 +11,34 @@ data_ncd <- read_csv(here("data", "burden-of-disease-ncd.csv"))
 ## Table of Estimates for NCD Burden Over Time
 
 ```{r}
-# Here render a table for the DALY burden over time for the three countries 
-# You should pivot the data to show each country in a separate column.
-# Use kable() from the knitr package to render the table.
+#Cleaning names
+data_ncd <- data_ncd %>% 
+  clean_names() 
 ```
 
-## Plot Showing Trends in NCD Burden Over Time 
+```{r}
+table_ncd <- data_ncd %>% 
+  rename(dalys=dal_ys_disability_adjusted_life_years_non_communicable_diseases_sex_both_age_age_standardized_rate,country=entity) %>%
+  filter(code=="BFA"|code=="ZMB"|code=="CHE") 
+# You should pivot the data to show each country in a separate column.
+table_ncd_wide <- table_ncd %>%
+  pivot_wider(values_from =dalys, names_from =country) 
+  # Use kable() from the knitr package to render the table.
+ kable(table_ncd_wide) 
+ 
+```
+
+## Plot Showing Trends in NCD Burden Over Time
 
 ```{r}
-# Here, plot a line graph showing the trend of DALY burden for the chosen countries over time. You can use ggplot2 to create this plot. Each country's line should be a different color.
+ggplot(data =table_ncd, aes(x = year, y = dalys, color = country)) +
+  geom_line() +
+  labs(title = "Trend of non communicablel disease burden 1990-2019",
+       x = "Year",
+       y = "Burden of disease (in dalys",
+       color = "country") +
+  scale_color_manual(values = c("Burkina Faso" = "blue", "Switzerland" = "red", "Zambia" = "green")) 
 ```
 
 ## Summary of NCD Burden Findings
-
-Provide a brief analysis based on the data presented in the table and chart. Highlight any significant findings or patterns. About 3 sentences.
-
-
+For Switzerland, there has been a sharp downward trend over the 3 decades. Moreover, the levels of disease burden as much lower than those of Zambia and Burkina Faso, two low-income countries. The Burden has consistently been higher than that of Burkina Faso, up until around 2015 when the two countries converge to the same level of burden (around 25,000 dalys).
